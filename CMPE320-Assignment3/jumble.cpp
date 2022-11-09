@@ -35,7 +35,7 @@ int JumblePuzzle::getColPos() {
 int JumblePuzzle::getRowPos() {
   return row;
 }
-int JumblePuzzle::getDirection() {
+char JumblePuzzle::getDirection() {
   return dir;
 }
     
@@ -80,13 +80,23 @@ JumblePuzzle::JumblePuzzle(JumblePuzzle &jumble) {
   jumble.generateJumble();
 }
 
+JumblePuzzle::~JumblePuzzle() {
+  // N is equivalent to rowlen from the generateJumble function.
+  int N = ((int) word.length() * diff + 1)*3;
+  for(int i = 0; i < N; i++) {
+    free(puzzle[i]);
+  }
+  free(puzzle);
+}
+
 char **JumblePuzzle::generateJumble() {
   randomGen rn = randomGen();
   // row length (number of columns)
-  int rowlen = (int) word.length() * diff * 3 + 3;
+  int lenfac = (int) word.length() * diff + 1;
+  int rowlen = lenfac * 3;
   
   // column length (number of rows)
-  int collen = (int) word.length() * diff + 1;
+  int collen = lenfac;
   
   // Allocate space to p, making room for spacing and column/row labels and terminating characters
   char **p;
@@ -106,27 +116,84 @@ char **JumblePuzzle::generateJumble() {
   // Top left corner is blank.
   p[0][0] = ' ';
   p[0][1] = ' ';
-    
-  for (int x = 1; x < collen; x++) {
-    if(x <= 10) {
-      p[x][0] = ' ';
-      p[x][1] = x + 47;
+  
+  // Set row and column labels
+  for (int x = 0; x < collen; x++) {
+    if(x < 10) {
+      p[x+1][0] = ' ';
+      p[x+1][1] = x + 48;
     }
     else {
-      p[x][0] = x - x%10 + 47;
-      p[x][1] = x%10 + 47;
+      p[x+1][0] = (x - x%10)/10 + 48;
+      p[x+1][1] = x%10 + 48;
     }
   }
   for (int x = 2; x < rowlen; x+=3) {
-    p[0][x+1] = ' ';
-    p[0][x+2] = ' ';
-    p[0][x+3] = x/3 + 48;
+    if(x/3 < 10) {
+      p[0][x+1] = ' ';
+      p[0][x+2] = ' ';
+      p[0][x+3] = x/3 + 48;
+    }
+    else {
+      p[0][x+1] = ' ';
+      p[0][x+2] = (x/3 - (x/3)%10)/10 + 48;
+      p[0][x+3] = (x/3)%10 + 48;
+    }
   }
+  
   for (int x = 1; x < collen; x++) {
     for (int y = 2; y < rowlen; y+=3) {
       p[x][y+1] = ' ';
       p[x][y+2] = ' ';
       p[x][y+3] = rn.generate('a', 'z');
+    }
+  }
+  
+  // Randomly generate a direction either north, south, east, or west.
+  int temp = rn.generate(0, 3);
+  dir = (!temp) ? 'n' : (temp == 1) ? 's' : (temp == 2) ? 'w' : 'e';
+  if (temp == 0) {
+    dir = 'n';
+    col = rn.generate(1, lenfac);
+    // If we're going north, generate only values where the whole word will fit
+    row = rn.generate(lenfac - (int) word.length() - 1, lenfac);
+    int y = row;
+    for (int x = 0; x < word.length(); x++) {
+      p[y][col*3 + 2] = word[x];
+      y--;
+    }
+  }
+  else if (temp == 1) {
+    dir = 's';
+    col = rn.generate(1, lenfac);
+    // If we're going north, generate only values where the whole word will fit
+    row = rn.generate(1, lenfac - (int) word.length() - 1);
+    int y = row*3 + 2;
+    for (int x = 0; x < word.length(); x++) {
+      p[y][col*3 + 2] = word[x];
+      y++;
+    }
+  }
+  else if (temp == 2) {
+    dir = 'w';
+    col = rn.generate(1, lenfac - (int) word.length() - 1);
+    // If we're going north, generate only values where the whole word will fit
+    row = rn.generate(1, lenfac);
+    int y = col*3 + 2;
+    for (int x = 0; x < word.length(); x++) {
+      p[row][y] = word[x];
+      y+=3;
+    }
+  }
+  else {
+    dir = 'e';
+    col = rn.generate(lenfac - (int) word.length() - 1, lenfac);
+    // If we're going north, generate only values where the whole word will fit
+    row = rn.generate(1, lenfac);
+    int y = col*3 + 2;
+    for (int x = 0; x < word.length(); x++) {
+      p[row][y] = word[x];
+      y-=3;
     }
   }
   
@@ -136,11 +203,8 @@ char **JumblePuzzle::generateJumble() {
     }
     printf("\n");
   }
-    
-  col = rn.generate(0, collen);
-  row = rn.generate(0, rowlen);
-  
-
-  
+  // Accounting for overhead introduced in computation.
+  row--;
+  col--;
   return p;
 }

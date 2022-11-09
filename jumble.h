@@ -46,11 +46,12 @@ public:
   int getSize();
   int getColPos();
   int getRowPos();
-  int getDirection();
+  char getDirection();
       
   // Constructors
   JumblePuzzle(JumblePuzzle &jumble);
   JumblePuzzle(std::string wordin, std::string diff);
+  ~JumblePuzzle();
   
   
 };
