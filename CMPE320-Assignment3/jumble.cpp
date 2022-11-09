@@ -43,13 +43,17 @@ char JumblePuzzle::getDirection() {
 JumblePuzzle::JumblePuzzle(string inputword, string difficulty) {
   // Instead of checking for capitalization and throwing an error if the input has capitals,
   // I just converted the input to lower case
+  if (inputword.length() < 3 || inputword.length() > 10) {
+    throw BadJumbleException();
+  }
   for (int x = 0; x < inputword.length(); x++) {
+    // Throw an exception if any of the characters are not alphabetical.
+    if(inputword[x] < 'A' || (inputword[x] > 'Z' && inputword[x] < 'a') || inputword[x] > 'a') {
+      throw BadJumbleException();
+    }
     if ( inputword[x] < 'a') {
       inputword[x] += 'a' - 'A';
     }
-  }
-  if (inputword.length() < 3 || inputword.length() > 10) {
-    throw BadJumbleException();
   }
   word = inputword;
   for (int x = 0; x < difficulty.length(); x++) {
