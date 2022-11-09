@@ -7,7 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		051AF3ED291AEA2600787276 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 051AF3EC291AEA2600787276 /* main.cpp */; };
+		051AF3ED291AEA2600787276 /* jumble.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 051AF3EC291AEA2600787276 /* jumble.cpp */; };
+		051AF3F4291AEB0200787276 /* testJumble.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 051AF3F3291AEB0200787276 /* testJumble.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -24,7 +25,9 @@
 
 /* Begin PBXFileReference section */
 		051AF3E9291AEA2600787276 /* CMPE320-Assignment3 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "CMPE320-Assignment3"; sourceTree = BUILT_PRODUCTS_DIR; };
-		051AF3EC291AEA2600787276 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		051AF3EC291AEA2600787276 /* jumble.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = jumble.cpp; sourceTree = "<group>"; };
+		051AF3F3291AEB0200787276 /* testJumble.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = testJumble.cpp; sourceTree = "<group>"; };
+		051AF3F5291AEB4800787276 /* jumble.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = jumble.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -41,6 +44,7 @@
 		051AF3E0291AEA2600787276 = {
 			isa = PBXGroup;
 			children = (
+				051AF3F5291AEB4800787276 /* jumble.h */,
 				051AF3EB291AEA2600787276 /* CMPE320-Assignment3 */,
 				051AF3EA291AEA2600787276 /* Products */,
 			);
@@ -57,7 +61,8 @@
 		051AF3EB291AEA2600787276 /* CMPE320-Assignment3 */ = {
 			isa = PBXGroup;
 			children = (
-				051AF3EC291AEA2600787276 /* main.cpp */,
+				051AF3EC291AEA2600787276 /* jumble.cpp */,
+				051AF3F3291AEB0200787276 /* testJumble.cpp */,
 			);
 			path = "CMPE320-Assignment3";
 			sourceTree = "<group>";
@@ -119,7 +124,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				051AF3ED291AEA2600787276 /* main.cpp in Sources */,
+				051AF3F4291AEB0200787276 /* testJumble.cpp in Sources */,
+				051AF3ED291AEA2600787276 /* jumble.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
