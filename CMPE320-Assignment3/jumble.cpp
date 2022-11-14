@@ -18,9 +18,35 @@ randomGen::randomGen() {
 int randomGen::generate(int low, int high) {
   return uniform_int_distribution<>(low, high)(gen);
 }
+/*
+ BadJumbleException constructor.
+ Case 0: word not valid length.
+ Case 1: word contains invalid characters.
+ Case 2: difficulty is invalid.
+ Case 3: malloc failed.
+ Default: generic error.
+ */
+BadJumbleException::BadJumbleException(int i) {
+  switch(i) {
+    case 0:
+      errout = "ERROR (code 0): Input word not in length range 3-10.";
+      break;
+    case 1:
+      errout = "ERROR (code 1): Input word contains non-alphabetical characters.";
+      break;
+    case 2:
+      errout = "ERROR (code 2): Input difficulty is not \"easy\", \"medium\", or \"hard\".";
+      break;
+    case 3:
+      errout = "ERROR (code 3): Memory allocation failed.";
+      break;
+    default:
+      errout = "UNKNOWN ERROR: Unable to generate Jumble Puzzle.";
+  }
+}
 
 const char * BadJumbleException::what() const throw() {
-  return "Invalid input! Unable to generate Jumble Puzzle.\n";
+  return errout.c_str();
 }
 
 char ** JumblePuzzle::getJumble() {
@@ -42,14 +68,14 @@ char JumblePuzzle::getDirection() {
   // Constructors
 JumblePuzzle::JumblePuzzle(string inputword, string difficulty) {
   // Instead of checking for capitalization and throwing an error if the input has capitals,
-  // I just converted the input to lower case
+  // I just converted the input to lower case to improve usability
   if (inputword.length() < 3 || inputword.length() > 10) {
-    throw BadJumbleException();
+    throw BadJumbleException(0);
   }
   for (int x = 0; x < inputword.length(); x++) {
     // Throw an exception if any of the characters are not alphabetical.
     if(inputword[x] < 'A' || (inputword[x] > 'Z' && inputword[x] < 'a') || inputword[x] > 'z') {
-      throw BadJumbleException();
+      throw BadJumbleException(1);
     }
     if ( inputword[x] < 'a') {
       inputword[x] += 'a' - 'A';
@@ -72,7 +98,7 @@ JumblePuzzle::JumblePuzzle(string inputword, string difficulty) {
     diff = 4;
   }
   else {
-    throw BadJumbleException();
+    throw BadJumbleException(2);
   }
   
   puzzle = generateJumble();
@@ -95,13 +121,13 @@ JumblePuzzle::JumblePuzzle(JumblePuzzle &jumble) {
   puzzle = (char **) malloc(lenfac * sizeof(char *));
   
   if(puzzle == NULL) {
-    throw BadJumbleException();
+    throw BadJumbleException(3);
   }
   for(int i = 0; i < lenfac; i++) {
     puzzle[i] = (char *) malloc(lenfac * sizeof(int));
     
     if(puzzle[i] == NULL) {
-      throw BadJumbleException();
+      throw BadJumbleException(3);
     }
   }
   
@@ -145,41 +171,15 @@ char **JumblePuzzle::generateJumble() {
   p = (char **) malloc(rowlen * sizeof(char *));
   
   if(p == NULL) {
-    throw BadJumbleException();
+    throw BadJumbleException(3);
   }
   for(int i = 0; i < rowlen; i++) {
     p[i] = (char *) malloc(collen * sizeof(int));
     
     if(p[i] == NULL) {
-      throw BadJumbleException();
+      throw BadJumbleException(3);
     }
   }
-  // p[x][y] where x is row and y is column
-  // Top left corner is blank.
-  
-//  // Set row and column labels (Apparently not necessary)
-//  for (int x = 0; x < collen; x++) {
-//    if(x < 10) {
-//      p[x+1][0] = ' ';
-//      p[x+1][1] = x + 48;
-//    }
-//    else {
-//      p[x+1][0] = (x - x%10)/10 + 48;
-//      p[x+1][1] = x%10 + 48;
-//    }
-//  }
-//  for (int x = 2; x < rowlen; x+=3) {
-//    if(x/3 < 10) {
-//      p[0][x+1] = ' ';
-//      p[0][x+2] = ' ';
-//      p[0][x+3] = x/3 + 48;
-//    }
-//    else {
-//      p[0][x+1] = ' ';
-//      p[0][x+2] = (x/3 - (x/3)%10)/10 + 48;
-//      p[0][x+3] = (x/3)%10 + 48;
-//    }
-//  }
   
   // Generate a grid of random lowercase characters.
   for (int x = 0; x < lenfac; x++) {
@@ -191,6 +191,7 @@ char **JumblePuzzle::generateJumble() {
   // Randomly generate a direction either north, south, east, or west.
   int temp = rn.generate(0, 3);
   dir = (!temp) ? 'n' : (temp == 1) ? 's' : (temp == 2) ? 'w' : 'e';
+  // North
   if (temp == 0) {
     dir = 'n';
     col = rn.generate(0, lenfac - 1);
@@ -202,6 +203,7 @@ char **JumblePuzzle::generateJumble() {
       y--;
     }
   }
+  // South
   else if (temp == 1) {
     dir = 's';
     col = rn.generate(0, lenfac - 1);
@@ -213,6 +215,7 @@ char **JumblePuzzle::generateJumble() {
       y++;
     }
   }
+  // West
   else if (temp == 2) {
     dir = 'w';
     col = rn.generate(0, lenfac - (int) word.length() - 1);
@@ -224,6 +227,7 @@ char **JumblePuzzle::generateJumble() {
       y++;
     }
   }
+  // East
   else {
     dir = 'e';
     col = rn.generate(lenfac - (int) word.length() - 1, lenfac - 1);

@@ -14,7 +14,9 @@
 
 class BadJumbleException:public std::exception {
   public:
+  std::string errout;
   const char * what() const throw();
+  BadJumbleException(int i);
 };
 
 class randomGen {

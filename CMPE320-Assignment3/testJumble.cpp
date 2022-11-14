@@ -83,14 +83,190 @@ void playGame() {
 } // end playGame
 
 
-// Add unit tests to this function.  A few unit tests are provided to test your copy constructor,
-// your assignment overloading and aliasing.  You need to write some more tests before these ones.
-// Test the public members only ("Black Box Testing").  Test to make sure that exceptions are
+// Add unit tests to this function. A few unit tests are provided to test your copy constructor,
+// your assignment overloading and aliasing. You need to write some more tests before these ones.
+// Test the public members only ("Black Box Testing"). Test to make sure that exceptions are
 // thrown when they should be, that the puzzle is the correct size and is formed properly, and
-// that the accessors return what they should.  You can add these unit tests as you develop your
+// that the accessors return what they should. You can add these unit tests as you develop your
 // code ("TDD") and comment out the supplied tests until you are ready for them.
 void testJumble() {
+  /*
+   TODO: Generate tests for inputs
+   1. Test correct input word. 4 tests: (valid, too short, too long, invalid characters)
+   2. Test correct input difficulty (easy, medium, hard, uppercase, invalid)
+   3. Test that puzzle is the right size.
+   4. Test that word is in specified location
+   */
+  
+  // Test input word for proper operation
+  cout << "Testing input word recognition:" << endl;
+  // Base case
+  try {
+    JumblePuzzle test("HELLO","easy");
+    cout << "Base test passed." << endl;
+  }
+  catch (BadJumbleException& e) {
+    cout << e.what() << endl;
+  }
+  // Word too short
+  cout << "Short test, should throw an error:" << endl;
+  try {
+    JumblePuzzle test("IN","easy");
+  }
+  catch (BadJumbleException& e) {
+    cout << e.what() << endl;
+  }
+  // Word too long
+  cout << "Long test, should throw an error:" << endl;
+  try {
+    JumblePuzzle test("MISSISSIPPI","easy");
+  }
+  catch (BadJumbleException& e) {
+    cout << e.what() << endl;
+  }
+  // Invalid characters
+  cout << "Invalid input test, should throw an error:" << endl;
+  try {
+    JumblePuzzle test("[!1There]","easy");
+  }
+  catch (BadJumbleException& e) {
+    cout << e.what() << endl;
+  }
+  cout << endl;
+  
+  // Test input difficulty for proper operation
+  cout << "Testing input dificulty recognition:" << endl;
+  // easy case
+  try {
+    JumblePuzzle test("HELLO","easy");
+    cout << "Easy test passed." << endl;
+  }
+  catch (BadJumbleException& e) {
+    cout << e.what() << endl;
+  }
+  // medium case
+  try {
+    JumblePuzzle test("HELLO","medium");
+    cout << "Medium test passed." << endl;
+  }
+  catch (BadJumbleException& e) {
+    cout << e.what() << endl;
+  }
+  // hard case
+  try {
+    JumblePuzzle test("HELLO","hard");
+    cout << "Hard test passed." << endl;
+  }
+  catch (BadJumbleException& e) {
+    cout << e.what() << endl;
+  }
+  // uppercase case
+  try {
+    JumblePuzzle test("HELLO","MEDIUM");
+    cout << "Uppercase test passed." << endl;
 
+  }
+  catch (BadJumbleException& e) {
+    cout << e.what() << endl;
+  }
+  // Invalid difficulty case
+  cout << "Invalid difficulty, should throw an error:" << endl;
+  try {
+    JumblePuzzle test("HELLO","not too bad");
+  }
+  catch (BadJumbleException& e) {
+    cout << e.what() << endl;
+  }
+  cout << endl;
+  
+  // Test puzzle size for proper operation
+  cout << "Testing word size consistency:" << endl;
+  try {
+    JumblePuzzle test("HELLO","easy");
+    // Array size should be length of input string times difficulty, in this test 2*5 = 10.
+    if(test.getSize() == 10) {
+      cout << "Word size consistency test passed." << endl;
+    }
+    else {
+      cout << "Word size consistency test failed." << endl;
+    }
+  }
+  catch (BadJumbleException& e) {
+    cout << e.what() << endl;
+  }
+  cout << endl;
+  
+  // Test word presence for proper operation
+  cout << "Testing puzzle completeness:" << endl;
+  string wordin = "hello";
+  JumblePuzzle test = JumblePuzzle(wordin,"easy");
+  char **p = test.getJumble();
+  int column = test.getColPos();
+  int row = test.getRowPos();
+  char direction = test.getDirection();
+  bool passed = true;
+  switch (direction) {
+    case 'n': {
+      int y = row;
+      for (int x = 0; x < wordin.length(); x++) {
+        if(p[y][column] != wordin[x]) {
+          passed = false;
+          cout << p[y][column] << wordin[x] << endl;
+          break;
+        }
+        y--;
+      }
+      break;
+    }
+    case 's': {
+      int y = row;
+      for (int x = 0; x < wordin.length(); x++) {
+        if(p[y][column] != wordin[x]) {
+          passed = false;
+          cout << p[y][column] << wordin[x] << endl;
+          break;
+        }
+        y++;
+      }
+      break;
+    }
+    case 'w': {
+      int y = column;
+      for (int x = 0; x < wordin.length(); x++) {
+        if(p[row][y] != wordin[x]) {
+          passed = false;
+          cout << p[y][column] << wordin[x] << endl;
+          break;
+        }
+        y++;
+      }
+      break;
+    }
+    case 'e': {
+      int y = column;
+      for (int x = 0; x < wordin.length(); x++) {
+        if(p[row][y] != wordin[x]) {
+          passed = false;
+          cout << p[y][column] << wordin[x] << endl;
+          break;
+        }
+        y--;
+      }
+      break;
+    }
+    default: {
+      // This should be unreachable.
+      break;
+    }
+  }
+  if (passed) {
+    cout << "Puzzle completeness passed." << endl;
+  }
+  else {
+    cout << "Puzzle completeness failed." << endl;
+  }
+  cout << endl;
+  
 	// Test copy constructor for proper operation
 	cout << "Testing copy constructor:" << endl;
 	// While debugging, you can use capital letters to make the hidden string easier to locate
