@@ -45,7 +45,7 @@ BadJumbleException::BadJumbleException(int i) {
   }
 }
 
-const char * BadJumbleException::what() const throw() {
+const char * BadJumbleException::what() const noexcept {
   return errout.c_str();
 }
 

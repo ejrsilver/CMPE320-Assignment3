@@ -199,7 +199,7 @@ void testJumble() {
   // Test word presence for proper operation
   cout << "Testing puzzle completeness:" << endl;
   string wordin = "hello";
-  JumblePuzzle test = JumblePuzzle(wordin,"easy");
+  JumblePuzzle test(wordin,"easy");
   char **p = test.getJumble();
   int column = test.getColPos();
   int row = test.getRowPos();
