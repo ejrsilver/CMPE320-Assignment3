@@ -11,24 +11,16 @@
 #include <random>
 #include <string>
 
-
-class BadJumbleException:public std::exception {
-  public:
-  std::string errout;
-  const char * what() const throw();
-  BadJumbleException(int i);
-};
-
-class randomGen {
+// BadJumbleException
+class BadJumbleException : public std::exception {
 private:
-  // Random number generator. Fully random, but entropy pool is limited so only being used for seeding.
-  std::random_device rd;
-  // 19937 state-size Mersenne Twister Engine. Not quite random, but more random than an LCG.
-  std::mt19937 gen;
-
+  // Error code.
+  int err;
 public:
-  randomGen();
-  int generate(int low, int high);
+  const char * what() const throw();
+  
+  // Constructor with error code input.
+  BadJumbleException(int i) : err(i) {}
 };
 
 class JumblePuzzle {
@@ -40,6 +32,8 @@ private:
   std::string word;
   int col;
   int row;
+  int generate(int low, int high);
+  void initGen();
   
   char ** generateJumble();
   
@@ -54,7 +48,6 @@ public:
   JumblePuzzle(JumblePuzzle &jumble);
   JumblePuzzle(std::string wordin, std::string diff);
   ~JumblePuzzle();
-  
   
 };
 

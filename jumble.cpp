@@ -10,13 +10,14 @@
 
 using namespace std;
 
-// Define random number generator class.
-randomGen::randomGen() {
-  gen.seed(rd());
+// Initialize generator.
+void JumblePuzzle::initGen() {
+  srand(clock());
 }
-// This function will be used to generate all random values.
-int randomGen::generate(int low, int high) {
-  return uniform_int_distribution<>(low, high)(gen);
+
+// Generate a pseudorandom value in a specified range.
+int JumblePuzzle::generate(int low, int high) {
+  return low + (rand() % ( high - low + 1));
 }
 /*
  BadJumbleException constructor.
@@ -26,29 +27,24 @@ int randomGen::generate(int low, int high) {
  Case 3: malloc failed.
  Default: generic error.
  */
-BadJumbleException::BadJumbleException(int i) {
-  switch(i) {
+
+const char * BadJumbleException::what() const throw() {
+  // Output an error code based on code parameter.
+  switch(err) {
     case 0:
-      errout = "ERROR (code 0): Input word not in length range 3-10.";
-      break;
+      return "ERROR (code 0): Input word not in length range 3-10.";
     case 1:
-      errout = "ERROR (code 1): Input word contains non-alphabetical characters.";
-      break;
+      return "ERROR (code 1): Input word contains non-alphabetical characters.";
     case 2:
-      errout = "ERROR (code 2): Input difficulty is not \"easy\", \"medium\", or \"hard\".";
-      break;
+      return "ERROR (code 2): Input difficulty is not \"easy\", \"medium\", or \"hard\".";
     case 3:
-      errout = "ERROR (code 3): Memory allocation failed.";
-      break;
+      return "ERROR (code 3): Memory allocation failed.";
     default:
-      errout = "UNKNOWN ERROR: Unable to generate Jumble Puzzle.";
+      return "UNKNOWN ERROR: Unable to generate Jumble Puzzle.";
   }
 }
 
-const char * BadJumbleException::what() const noexcept {
-  return errout.c_str();
-}
-
+// Simple get methods.
 char ** JumblePuzzle::getJumble() {
   return puzzle;
 }
@@ -82,12 +78,15 @@ JumblePuzzle::JumblePuzzle(string inputword, string difficulty) {
     }
   }
   word = inputword;
+  
+  // Set difficulty to lowercase
   for (int x = 0; x < difficulty.length(); x++) {
     if ( difficulty[x] < 'a') {
       difficulty[x] += 'a' - 'A';
     }
   }
   
+  // Determine difficulty, throwing an error if invalid.
   if (!strcmp(difficulty.c_str(), "easy")) {
     diff = 2;
   }
@@ -100,10 +99,11 @@ JumblePuzzle::JumblePuzzle(string inputword, string difficulty) {
   else {
     throw BadJumbleException(2);
   }
-  
+  // Generate puzzle.
   puzzle = generateJumble();
 }
 
+// Copy constructor (coded in a way such that I didn't need to overload the assignment operator).
 JumblePuzzle::JumblePuzzle(JumblePuzzle &jumble) {
   // Assign all parameters from the given puzzle to the new puzzle
   // (aside from the actual puzzle since it's a pointer)
@@ -114,16 +114,15 @@ JumblePuzzle::JumblePuzzle(JumblePuzzle &jumble) {
   col = jumble.col;
   row = jumble.row;
   
-  
   // Allocate space for the copied puzzle.
   int lenfac = (int) word.length() * diff;
-  
   puzzle = (char **) malloc(lenfac * sizeof(char *));
   
   if(puzzle == NULL) {
     throw BadJumbleException(3);
   }
   for(int i = 0; i < lenfac; i++) {
+    // Allocate space for each row.
     puzzle[i] = (char *) malloc(lenfac * sizeof(int));
     
     if(puzzle[i] == NULL) {
@@ -155,7 +154,7 @@ JumblePuzzle::~JumblePuzzle() {
 
 char **JumblePuzzle::generateJumble() {
   // Random generator.
-  randomGen rn = randomGen();
+  initGen();
   
   // Puzzle length
   int lenfac = (int) word.length() * diff;
@@ -173,6 +172,7 @@ char **JumblePuzzle::generateJumble() {
   if(p == NULL) {
     throw BadJumbleException(3);
   }
+  // Allocate space for each row.
   for(int i = 0; i < rowlen; i++) {
     p[i] = (char *) malloc(collen * sizeof(int));
     
@@ -181,22 +181,22 @@ char **JumblePuzzle::generateJumble() {
     }
   }
   
-  // Generate a grid of random lowercase characters.
+  // Generate a grid of pseudorandom lowercase characters.
   for (int x = 0; x < lenfac; x++) {
     for (int y = 0; y < lenfac; y++) {
-      p[x][y] = rn.generate('a', 'z');
+      p[x][y] = generate('a', 'z');
     }
   }
   
-  // Randomly generate a direction either north, south, east, or west.
-  int temp = rn.generate(0, 3);
+  // Pseudorandomly generate a direction either north, south, east, or west.
+  int temp = generate(0, 3);
   dir = (!temp) ? 'n' : (temp == 1) ? 's' : (temp == 2) ? 'w' : 'e';
   // North
   if (temp == 0) {
     dir = 'n';
-    col = rn.generate(0, lenfac - 1);
+    col = generate(0, lenfac - 1);
     // If we're going north, generate only values where the whole word will fit
-    row = rn.generate(lenfac - (int) word.length() - 1, lenfac - 1);
+    row = generate(lenfac - (int) word.length() - 1, lenfac - 1);
     int y = row;
     for (int x = 0; x < word.length(); x++) {
       p[y][col] = word[x];
@@ -206,9 +206,9 @@ char **JumblePuzzle::generateJumble() {
   // South
   else if (temp == 1) {
     dir = 's';
-    col = rn.generate(0, lenfac - 1);
+    col = generate(0, lenfac - 1);
     // If we're going north, generate only values where the whole word will fit
-    row = rn.generate(0, lenfac - (int) word.length() - 1);
+    row = generate(0, lenfac - (int) word.length() - 1);
     int y = row;
     for (int x = 0; x < word.length(); x++) {
       p[y][col] = word[x];
@@ -218,9 +218,9 @@ char **JumblePuzzle::generateJumble() {
   // West
   else if (temp == 2) {
     dir = 'w';
-    col = rn.generate(0, lenfac - (int) word.length() - 1);
+    col = generate(0, lenfac - (int) word.length() - 1);
     // If we're going north, generate only values where the whole word will fit
-    row = rn.generate(0, lenfac - 1);
+    row = generate(0, lenfac - 1);
     int y = col;
     for (int x = 0; x < word.length(); x++) {
       p[row][y] = word[x];
@@ -230,9 +230,9 @@ char **JumblePuzzle::generateJumble() {
   // East
   else {
     dir = 'e';
-    col = rn.generate(lenfac - (int) word.length() - 1, lenfac - 1);
+    col = generate(lenfac - (int) word.length() - 1, lenfac - 1);
     // If we're going north, generate only values where the whole word will fit
-    row = rn.generate(0, lenfac - 1);
+    row = generate(0, lenfac - 1);
     int y = col;
     for (int x = 0; x < word.length(); x++) {
       p[row][y] = word[x];
