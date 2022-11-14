@@ -82,6 +82,7 @@ void playGame() {
 	jp = nullptr;
 } // end playGame
 
+
 // Add unit tests to this function.  A few unit tests are provided to test your copy constructor,
 // your assignment overloading and aliasing.  You need to write some more tests before these ones.
 // Test the public members only ("Black Box Testing").  Test to make sure that exceptions are
@@ -149,7 +150,11 @@ void testJumble() {
 	// even if you don't run out of memory.
 	// Of course you won't get a memory leak error if you are using the heap properly,
 	// and the program will terminate normally!
-	int loopLimit = 1000;
+  
+  // I ran this, and memory usage remained consistent (at 1.2 MB according to XCode) so I think I'm good for memory leaks.
+  // int loopLimit = 100000;
+  
+  int loopLimit = 1000;
 	for (int i = 0; i < loopLimit; i++)
 		JumblePuzzle jp("HIDDENWORD", "hard");
 	cout << "\nPassed memory leak test!" << endl;
@@ -158,7 +163,7 @@ void testJumble() {
 
 int main() {
   
-  playGame();
+  testJumble();
 
 	return 0;
 } // end main

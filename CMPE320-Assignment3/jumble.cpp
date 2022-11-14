@@ -48,7 +48,7 @@ JumblePuzzle::JumblePuzzle(string inputword, string difficulty) {
   }
   for (int x = 0; x < inputword.length(); x++) {
     // Throw an exception if any of the characters are not alphabetical.
-    if(inputword[x] < 'A' || (inputword[x] > 'Z' && inputword[x] < 'a') || inputword[x] > 'a') {
+    if(inputword[x] < 'A' || (inputword[x] > 'Z' && inputword[x] < 'a') || inputword[x] > 'z') {
       throw BadJumbleException();
     }
     if ( inputword[x] < 'a') {
@@ -79,14 +79,48 @@ JumblePuzzle::JumblePuzzle(string inputword, string difficulty) {
 }
 
 JumblePuzzle::JumblePuzzle(JumblePuzzle &jumble) {
-  jumble.word = word;
-  jumble.diff = diff;
-  jumble.generateJumble();
+  // Assign all parameters from the given puzzle to the new puzzle
+  // (aside from the actual puzzle since it's a pointer)
+  word = jumble.word;
+  diff = jumble.diff;
+  dir = jumble.dir;
+  puzzleLength = jumble.puzzleLength;
+  col = jumble.col;
+  row = jumble.row;
+  
+  
+  // Allocate space for the copied puzzle.
+  int lenfac = (int) word.length() * diff;
+  
+  puzzle = (char **) malloc(lenfac * sizeof(char *));
+  
+  if(puzzle == NULL) {
+    throw BadJumbleException();
+  }
+  for(int i = 0; i < lenfac; i++) {
+    puzzle[i] = (char *) malloc(lenfac * sizeof(int));
+    
+    if(puzzle[i] == NULL) {
+      throw BadJumbleException();
+    }
+  }
+  
+  // Populate new puzzle with characters from old puzzle.
+  for (int x = 0; x < lenfac; x++) {
+    for (int y = 0; y < lenfac; y++) {
+      puzzle[x][y] = jumble.puzzle[x][y];
+    }
+  }
 }
 
 JumblePuzzle::~JumblePuzzle() {
-  // N is equivalent to rowlen from the generateJumble function.
-  int N = ((int) word.length() * diff + 1)*3;
+  /*
+  N is equivalent to lenfac from the generateJumble function.
+   
+  I know the delete function was mentioned but I figured this was
+  slightly more direct and equivalent in functionality
+   */
+  int N = (int) word.length() * diff;
   for(int i = 0; i < N; i++) {
     free(puzzle[i]);
   }
@@ -94,12 +128,16 @@ JumblePuzzle::~JumblePuzzle() {
 }
 
 char **JumblePuzzle::generateJumble() {
+  // Random generator.
   randomGen rn = randomGen();
-  // row length (number of columns)
-  int lenfac = (int) word.length() * diff + 1;
-  int rowlen = lenfac * 3;
   
-  // column length (number of rows)
+  // Puzzle length
+  int lenfac = (int) word.length() * diff;
+  
+  // row length
+  int rowlen = lenfac;
+  
+  // column length
   int collen = lenfac;
   
   // Allocate space to p, making room for spacing and column/row labels and terminating characters
@@ -118,38 +156,35 @@ char **JumblePuzzle::generateJumble() {
   }
   // p[x][y] where x is row and y is column
   // Top left corner is blank.
-  p[0][0] = ' ';
-  p[0][1] = ' ';
   
-  // Set row and column labels
-  for (int x = 0; x < collen; x++) {
-    if(x < 10) {
-      p[x+1][0] = ' ';
-      p[x+1][1] = x + 48;
-    }
-    else {
-      p[x+1][0] = (x - x%10)/10 + 48;
-      p[x+1][1] = x%10 + 48;
-    }
-  }
-  for (int x = 2; x < rowlen; x+=3) {
-    if(x/3 < 10) {
-      p[0][x+1] = ' ';
-      p[0][x+2] = ' ';
-      p[0][x+3] = x/3 + 48;
-    }
-    else {
-      p[0][x+1] = ' ';
-      p[0][x+2] = (x/3 - (x/3)%10)/10 + 48;
-      p[0][x+3] = (x/3)%10 + 48;
-    }
-  }
+//  // Set row and column labels (Apparently not necessary)
+//  for (int x = 0; x < collen; x++) {
+//    if(x < 10) {
+//      p[x+1][0] = ' ';
+//      p[x+1][1] = x + 48;
+//    }
+//    else {
+//      p[x+1][0] = (x - x%10)/10 + 48;
+//      p[x+1][1] = x%10 + 48;
+//    }
+//  }
+//  for (int x = 2; x < rowlen; x+=3) {
+//    if(x/3 < 10) {
+//      p[0][x+1] = ' ';
+//      p[0][x+2] = ' ';
+//      p[0][x+3] = x/3 + 48;
+//    }
+//    else {
+//      p[0][x+1] = ' ';
+//      p[0][x+2] = (x/3 - (x/3)%10)/10 + 48;
+//      p[0][x+3] = (x/3)%10 + 48;
+//    }
+//  }
   
-  for (int x = 1; x < collen; x++) {
-    for (int y = 2; y < rowlen; y+=3) {
-      p[x][y+1] = ' ';
-      p[x][y+2] = ' ';
-      p[x][y+3] = rn.generate('a', 'z');
+  // Generate a grid of random lowercase characters.
+  for (int x = 0; x < lenfac; x++) {
+    for (int y = 0; y < lenfac; y++) {
+      p[x][y] = rn.generate('a', 'z');
     }
   }
   
@@ -158,57 +193,49 @@ char **JumblePuzzle::generateJumble() {
   dir = (!temp) ? 'n' : (temp == 1) ? 's' : (temp == 2) ? 'w' : 'e';
   if (temp == 0) {
     dir = 'n';
-    col = rn.generate(1, lenfac);
+    col = rn.generate(0, lenfac - 1);
     // If we're going north, generate only values where the whole word will fit
-    row = rn.generate(lenfac - (int) word.length() - 1, lenfac);
+    row = rn.generate(lenfac - (int) word.length() - 1, lenfac - 1);
     int y = row;
     for (int x = 0; x < word.length(); x++) {
-      p[y][col*3 + 2] = word[x];
+      p[y][col] = word[x];
       y--;
     }
   }
   else if (temp == 1) {
     dir = 's';
-    col = rn.generate(1, lenfac);
+    col = rn.generate(0, lenfac - 1);
     // If we're going north, generate only values where the whole word will fit
-    row = rn.generate(1, lenfac - (int) word.length() - 1);
-    int y = row*3 + 2;
+    row = rn.generate(0, lenfac - (int) word.length() - 1);
+    int y = row;
     for (int x = 0; x < word.length(); x++) {
-      p[y][col*3 + 2] = word[x];
+      p[y][col] = word[x];
       y++;
     }
   }
   else if (temp == 2) {
     dir = 'w';
-    col = rn.generate(1, lenfac - (int) word.length() - 1);
+    col = rn.generate(0, lenfac - (int) word.length() - 1);
     // If we're going north, generate only values where the whole word will fit
-    row = rn.generate(1, lenfac);
-    int y = col*3 + 2;
+    row = rn.generate(0, lenfac - 1);
+    int y = col;
     for (int x = 0; x < word.length(); x++) {
       p[row][y] = word[x];
-      y+=3;
+      y++;
     }
   }
   else {
     dir = 'e';
-    col = rn.generate(lenfac - (int) word.length() - 1, lenfac);
+    col = rn.generate(lenfac - (int) word.length() - 1, lenfac - 1);
     // If we're going north, generate only values where the whole word will fit
-    row = rn.generate(1, lenfac);
-    int y = col*3 + 2;
+    row = rn.generate(0, lenfac - 1);
+    int y = col;
     for (int x = 0; x < word.length(); x++) {
       p[row][y] = word[x];
-      y-=3;
+      y--;
     }
   }
-  
-  for (int x = 0; x < collen; x++) {
-    for (int y = 0; y < rowlen; y++) {
-      printf("%c", p[x][y]);
-    }
-    printf("\n");
-  }
-  // Accounting for overhead introduced in computation.
-  row--;
-  col--;
+
+  puzzleLength = lenfac;
   return p;
 }
